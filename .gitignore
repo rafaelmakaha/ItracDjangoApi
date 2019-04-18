@@ -3,7 +3,7 @@
 *.pot
 *.pyc
 *.pye
-kings_school/__pycache__/*
+djangoApi/__pycache__/
 
 # DB
 db.sqlite3

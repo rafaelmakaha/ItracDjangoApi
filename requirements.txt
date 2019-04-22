@@ -2,3 +2,6 @@ Django
 djangorestframework
 djangorestframework-jwt
 psycopg2-binary
+configparser==3.7.4
+PyMySQL==0.9.3
+requests==2.21.0

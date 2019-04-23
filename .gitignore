@@ -3,9 +3,9 @@
 *.pot
 *.pyc
 *.pye
-djangoApi/__pycache__/
+**/__pycache__
+**/migrations
 
 # DB
 db.sqlite3
 
-media

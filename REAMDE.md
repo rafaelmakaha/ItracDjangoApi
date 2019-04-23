@@ -8,8 +8,8 @@ Run container:
 
 Make migrations:
 
-    sudo docker-compose -f docker-file.yml run --rm web python manage.py makemigrations
+    sudo docker-compose -f docker-compose.yml run --rm web python manage.py makemigrations
 
 Migrate:
 
-    sudo docker-compose -f docker-file.yml run --rm web python manage.py makemigrations
+    sudo docker-compose -f docker-compose.yml run --rm web python manage.py makemigrations

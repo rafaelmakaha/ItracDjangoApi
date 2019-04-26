@@ -16,12 +16,10 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from answares import views
-from rest_framework import routers
-
-router = routers.DefaultRouter()
-router.register(r'answares',views.AnswaresViewSet)
+from django.urls import path
 
 urlpatterns = [
-    url(r'^', include(router.urls)),
-    url(r'^admin/', admin.site.urls),
+    path('api/', include([
+        path('', include('answares.urls')),
+    ])),
 ]

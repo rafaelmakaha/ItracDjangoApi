@@ -28,6 +28,6 @@ class ProcessedsList(APIView):
     List all snippets, or create a new snippet.
     """
     def get(self, request, format=None):
-        pendings = Answares.objects.filter(status='S')
-        serializer = AnswaresSerializer(pendings, many=True, context={'request': request})
+        processeds = Answares.objects.filter(status='P')
+        serializer = AnswaresSerializer(processeds, many=True, context={'request': request})
         return Response(serializer.data)

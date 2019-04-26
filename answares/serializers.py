@@ -5,4 +5,12 @@ from .models import Answares
 class AnswaresSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answares
-        fields = '__all__'
+        fields = (
+            'lime_id',
+            'servico_id',
+            'servico_nome',
+            'orgao_id',
+            'orgao_nome',
+            'status',
+            'url'
+        )

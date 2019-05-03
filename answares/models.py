@@ -11,6 +11,7 @@ class Answares(models.Model):
     lime_id = models.IntegerField(
         primary_key=True
     )
+    survey_id = models.IntegerField()
     servico_id = models.IntegerField()
     servico_nome = models.CharField(
         max_length=120

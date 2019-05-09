@@ -11,19 +11,11 @@ from .customLibs.connect_database import ConnectDatabase
 from .customLibs.servicos_orgaos import ServicosOrgaos
 
 
-
 class AnswaresViewSet(viewsets.ModelViewSet):
     queryset = Answares.objects.all()
     serializer_class = AnswaresSerializer
     def get(self, request, format=None):
-        survey = '311832'
-        newAnswares = ConnectDatabase.queryAnswerServiceOther(survey)
-        servicos_orgaos = ServicosOrgaos.returnOrgaos()
-
-        for element in newAnswares:
-            for key in servicos_orgaos:
-                if element[6] == servicos_orgaos[key][0]['orgao_nome']:
-                    pass
+        
 
 
         answares = Answares.objects.all()
@@ -35,6 +27,32 @@ class PendingsList(APIView):
     List all snippets, or create a new snippet.
     """
     def get(self, request, format=None):
+        try:
+            survey = '311832'
+            newAnswares = ConnectDatabase.queryAnswerServiceOther(survey)
+            servicos_orgaos = ServicosOrgaos.returnOrgaos()
+            for answare in newAnswares:
+                id_orgao = int(answare[6])
+                if answare[8] == '-oth-':
+                    nome_servico = answare[9]
+                    id_servico = 0000
+                else:
+                    continue
+                    id_servico = answare[8]
+                servicos_orgaos[int(id_orgao)][0]['orgao_nome']
+                survey_id = int(survey)
+                lime_id = int(id_orgao + '0000')
+                Answares.objects.create(
+                    lime_id=lime_id,
+                    survey_id=survey_id,
+                    servico_id=id_servico,
+                    orgao_id=id_orgao,
+                    orgao_nome="",
+                    servico_nome="",
+                    status="N"
+                )
+        except:
+            print('Não foi possível atualizar o banco')
         pendings = Answares.objects.filter(status='N')
         serializer = AnswaresSerializer(pendings, many=True, context={'request': request})
         return Response(serializer.data)
@@ -47,3 +65,4 @@ class ProcessedsList(APIView):
         processeds = Answares.objects.filter(status='P')
         serializer = AnswaresSerializer(processeds, many=True, context={'request': request})
         return Response(serializer.data)
+

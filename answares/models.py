@@ -25,3 +25,6 @@ class Answares(models.Model):
         max_length=1,
         choices=STATUS_TYPE
     )
+
+class Horario(models.Model):
+    last_time = models.TimeField()

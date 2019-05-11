@@ -7,10 +7,10 @@ class Answares(models.Model):
         ('N', 'Not Processed')
     )
 
-
-    lime_id = models.IntegerField(
+    answare_id = models.IntegerField(
         primary_key=True
     )
+    lime_id = models.IntegerField()
     survey_id = models.IntegerField()
     servico_id = models.IntegerField()
     servico_nome = models.CharField(

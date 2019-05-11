@@ -14,6 +14,10 @@ Migrate:
 
     sudo docker-compose -f docker-compose.yml run --rm web python manage.py migrate
 
+## Bash
+
+    sudo docker exec -it <container_name> bash -l
+
 
 ## Removing
 

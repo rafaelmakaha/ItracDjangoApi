@@ -107,6 +107,27 @@ class ServicosOrgaos:
             for i in range(len(data[key])):
                 servicos.append(data[key][i]['servico_nome'])
         return servicos
+    def returnServicosObjects():
+        servicos = []
+        data = ServicosOrgaos.returnOrgaos()
+        for key in data:
+            for i in range(len(data[key])):
+                servico = {}
+                servico['servico_nome'] = data[key][i]['servico_nome']
+                servico['servico_id'] = data[key][i]['servico_id']
+                # servicos[data[key][i]['servico_nome']] = data[key][i]['servico_id']
+                servicos.append(servico)
+        return servicos
+    def returnOrgaosObjects():
+        orgaos = []
+        data = ServicosOrgaos.returnOrgaos()
+        for key in data:
+            orgao = {}
+            orgao['orgao_nome'] = data[key][0]['orgao_nome']
+            orgao['orgao_id'] = data[key][0]['orgao_id']
+            # orgaos[data[key][i]['servico_nome']] = data[key][i]['servico_id']
+            orgaos.append(orgao)
+        return orgaos
 
 # url = 'https://www.servicos.gov.br/api/v1/servicos/'
 # response = requests.get(url)

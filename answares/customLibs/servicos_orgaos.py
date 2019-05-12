@@ -100,6 +100,13 @@ class ServicosOrgaos:
     def returnOrgaos():
         return ServicosOrgaos.get_orgaos(ServicosOrgaos.returnResponse().json()['resposta'])
 
+    def returnServicos():
+        servicos = []
+        data = ServicosOrgaos.returnOrgaos()
+        for key in data:
+            for i in range(len(data[key])):
+                servicos.append(data[key][i]['servico_nome'])
+        return servicos
 
 # url = 'https://www.servicos.gov.br/api/v1/servicos/'
 # response = requests.get(url)

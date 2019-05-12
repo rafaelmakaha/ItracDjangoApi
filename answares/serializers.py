@@ -16,3 +16,11 @@ class AnswaresSerializer(serializers.ModelSerializer):
             'status',
             'url'
         )
+
+class ServicosSerializer(serializers.Serializer):
+    servico_nome = serializers.CharField()
+    servico_id = serializers.CharField()
+
+class OrgaosSerializer(serializers.Serializer):
+    orgao_nome = serializers.CharField()
+    orgao_id = serializers.CharField()

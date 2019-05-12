@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.shortcuts import render
 from rest_framework import viewsets
 from .models import Answares, Horario
-from.serializers import AnswaresSerializer
+from.serializers import AnswaresSerializer, ServicosSerializer, OrgaosSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .customLibs.connect_database import ConnectDatabase
@@ -84,3 +84,16 @@ class ProcessedsList(APIView):
         serializer = AnswaresSerializer(processeds, many=True, context={'request': request})
         return Response(serializer.data)
 
+class ServicosList(viewsets.ViewSet):
+    serializer_class = ServicosSerializer
+    def get(self, request, format=None):
+        servicos = ServicosOrgaos.returnServicosObjects()
+        serializer = ServicosSerializer(servicos, many=True, context={'request': request})
+        return Response(serializer.data)
+
+class OrgaosList(viewsets.ViewSet):
+    serializer_class = OrgaosSerializer
+    def get(self, request, format=None):
+        orgaos = ServicosOrgaos.returnOrgaosObjects()
+        serializer = OrgaosSerializer(orgaos, many=True, context={'request': request})
+        return Response(serializer.data)

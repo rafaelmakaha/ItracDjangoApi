@@ -136,7 +136,7 @@ class ConnectDatabase:
             conn.autocommit = True
             survey_id = "survey_" + survey_id
             # create a cursor
-            cur = conn.cursor()
+            cur = conn.cursor(pymysql.cursors.DictCursor)
             
             # execute a statement
 
@@ -153,5 +153,37 @@ class ConnectDatabase:
                 print('Database connection closed.')
         return query
 
+    def updateQueryAnsware(survey_id, answare_id, servico_id):
+        """ Connect to the SQL database server """
+        conn = None
+        query = []
+        try:
+            # read connection parameters
+            params = config()
+            # connect to the SQL server
+            print('Connecting to the SQL database...')
+            conn = pymysql.connect(**params)
+            conn.autocommit = True
+            # survey_id = "survey_" + survey_id
+            # create a cursor
+            cur = conn.cursor(pymysql.cursors.DictCursor)
+            
+            # execute a statement
+
+            cur.execute('UPDATE limesurvey.survey_' + survey_id + ' SET ' + survey_id + 'X1X3="' + servico_id + '", ' + survey_id + 'X1X3other="" WHERE id="'+ answare_id +'";')
+            query = cur.fetchall()
+            # close the communication with the SQL
+            cur.close()
+
+        except (Exception, pymysql.DatabaseError) as error:
+            print(error)
+        finally:
+            if conn is not None:
+                conn.close()
+                print('Database connection closed.')
+        return query
+
 if __name__ == '__main__':
     print((ConnectDatabase.queryAnswerServiceOther('311832')))
+
+# cur.execute("""UPDATE limesurvey.survey_311832 SET seed="321" WHERE id=6""")

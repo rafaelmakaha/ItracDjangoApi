@@ -28,6 +28,7 @@ class ServicoSerializer(serializers.ModelSerializer):
         )
 
 class OrgaoSerializer(serializers.ModelSerializer):
+    servico = ServicoSerializer(many=True, read_only=True)
     class Meta:
         model = Orgao
         fields = (

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Answares
+from .models import Answares, Orgao, Servico
 
 
 class AnswaresSerializer(serializers.ModelSerializer):
@@ -17,10 +17,22 @@ class AnswaresSerializer(serializers.ModelSerializer):
             'url'
         )
 
-class ServicosSerializer(serializers.Serializer):
-    servico_nome = serializers.CharField()
-    servico_id = serializers.CharField()
+class ServicoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Servico
+        fields = (
+            'id',
+            'nome',
+            'url',
+            'orgao'
+        )
 
-class OrgaosSerializer(serializers.Serializer):
-    orgao_nome = serializers.CharField()
-    orgao_id = serializers.CharField()
+class OrgaoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Orgao
+        fields = (
+            'id',
+            'nome',
+            'url',
+            'servico'
+        )

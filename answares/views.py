@@ -3,8 +3,8 @@ from __future__ import unicode_literals
 
 from django.shortcuts import render
 from rest_framework import viewsets
-from .models import Answares, Horario
-from.serializers import AnswaresSerializer, ServicosSerializer, OrgaosSerializer
+from .models import Answares, Horario, Orgao, Servico
+from.serializers import AnswaresSerializer, ServicoSerializer, OrgaoSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .customLibs.connect_database import ConnectDatabase
@@ -40,6 +40,27 @@ class PendingsList(APIView):
     List all snippets, or create a new snippet.
     """
     def get(self, request, format=None):
+        orgaos = ServicosOrgaos.returnOrgaosObjects()
+        for orgao in orgaos:
+            print(orgao)
+            try:
+                Orgao.objects.create(
+                    id=orgao['orgao_id'],
+                    nome=orgao['orgao_nome']
+                )
+            except:
+                pass
+            for servico in orgao['servicos']:
+                try:
+                    parent = Orgao.objects.get(id=orgao['orgao_id'])
+                    Servico.objects.create(
+                        id=servico['servico_id'],
+                        nome=servico['servico_nome'],
+                        orgao=parent
+                    )
+                except:
+                    pass
+
         # atual = time.time()
         # print(atual)
         # if horario_atual - horario_banco > 1h:
@@ -84,16 +105,25 @@ class ProcessedsList(APIView):
         serializer = AnswaresSerializer(processeds, many=True, context={'request': request})
         return Response(serializer.data)
 
-class ServicosList(viewsets.ViewSet):
-    serializer_class = ServicosSerializer
-    def get(self, request, format=None):
-        servicos = ServicosOrgaos.returnServicosObjects()
-        serializer = ServicosSerializer(servicos, many=True, context={'request': request})
-        return Response(serializer.data)
+class OrgaoViewSet(viewsets.ModelViewSet):
+    queryset = Orgao.objects.all()
+    serializer_class = OrgaoSerializer
 
-class OrgaosList(viewsets.ViewSet):
-    serializer_class = OrgaosSerializer
-    def get(self, request, format=None):
-        orgaos = ServicosOrgaos.returnOrgaosObjects()
-        serializer = OrgaosSerializer(orgaos, many=True, context={'request': request})
-        return Response(serializer.data)
+class ServicoViewSet(viewsets.ModelViewSet):
+    queryset = Servico.objects.all()
+    serializer_class = ServicoSerializer
+
+
+# class ServicosList(viewsets.ViewSet):
+#     serializer_class = ServicoSerializer
+#     def get(self, request, format=None):
+#         servicos = ServicosOrgaos.returnServicosObjects()
+#         serializer = ServicoSerializer(servicos, many=True, context={'request': request})
+#         return Response(serializer.data)
+
+# class OrgaosList(viewsets.ViewSet):
+#     serializer_class = OrgaoSerializer
+#     def get(self, request, format=None):
+#         orgaos = ServicosOrgaos.returnOrgaosObjects()
+#         serializer = OrgaoSerializer(orgaos, many=True, context={'request': request})
+#         return Response(serializer.data)

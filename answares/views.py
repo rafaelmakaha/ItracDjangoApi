@@ -40,9 +40,9 @@ class PendingsList(APIView):
     List all snippets, or create a new snippet.
     """
     def get(self, request, format=None):
+        '''
         orgaos = ServicosOrgaos.returnOrgaosObjects()
         for orgao in orgaos:
-            print(orgao)
             try:
                 Orgao.objects.create(
                     id=orgao['orgao_id'],
@@ -60,7 +60,7 @@ class PendingsList(APIView):
                     )
                 except:
                     pass
-
+'''
         # atual = time.time()
         # print(atual)
         # if horario_atual - horario_banco > 1h:
@@ -69,18 +69,18 @@ class PendingsList(APIView):
         servicos_orgaos = ServicosOrgaos.returnOrgaos()
         for answare in newAnswares:
             try:
-                id_orgao = int(answare[survey + 'X1X1'])
+                id_orgao =answare[survey + 'X1X1']
                 if answare[survey + 'X1X3'] == '-oth-':
                     nome_servico = answare[survey + 'X1X3other']
                     id_servico = '0000'
-                    answare_id = str(survey) + str(answare['id'])
+                    answare_id = survey + str(answare['id'])
                 else:
                     continue
-                orgao_nome = servicos_orgaos[str(id_orgao)][0]['orgao_nome']
-                survey_id = int(survey)
-                lime_id = int(str(id_orgao) + id_servico)
+                orgao_nome = servicos_orgaos[str(int(id_orgao))][0]['orgao_nome']
+                survey_id = survey
+                lime_id = id_orgao + id_servico
                 Answares.objects.create(
-                    answare_id = int(answare_id),
+                    answare_id = answare_id,
                     lime_id=lime_id,
                     survey_id=survey_id,
                     servico_id=id_servico,

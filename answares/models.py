@@ -7,16 +7,15 @@ class Answares(models.Model):
         ('N', 'Not Processed')
     )
 
-    answare_id = models.IntegerField(
-        primary_key=True
-    )
-    lime_id = models.IntegerField()
-    survey_id = models.IntegerField()
-    servico_id = models.IntegerField()
-    servico_nome = models.CharField(
+    answare_id = models.CharField(
+        primary_key=True,
         max_length=120
     )
-    orgao_id = models.IntegerField()
+    lime_id = models.CharField(max_length=120)
+    survey_id = models.CharField(max_length=120)
+    servico_id = models.CharField(max_length=120)
+    servico_nome = models.CharField(max_length=120)
+    orgao_id = models.CharField(max_length=120)
     orgao_nome = models.CharField(
         max_length=120
     )

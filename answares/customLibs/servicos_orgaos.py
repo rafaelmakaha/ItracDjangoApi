@@ -4,9 +4,11 @@ import requests
 import declxml as xml
 from pprint import pprint
 
+from django.core.serializers import json
+
 from answares.auth_data import username, password
 from answares.customLibs.pylimerc import PyLimeRc
-
+import base64
 
 class ServicosOrgaos:
     def generate_codes(l, n):
@@ -155,6 +157,9 @@ class ServicosOrgaos:
         result = main.export_responses(iSurveyID=sid, sLanguageCode='pt-BR', sDocumentType='csv', sCompletionStatus='complete', sHeadingType='full', sResponseType='long')
         print(result)
 
+        jsonresult = base64.b64decode(result)
+        return jsonresult
+
 # url = 'https://www.servicos.gov.br/api/v1/servicos/'
 # response = requests.get(url)
 # orgaos_set = ServicosOrgaos.get_orgaos(response.json()['resposta'])
@@ -163,3 +168,4 @@ class ServicosOrgaos:
 
 
 answers = ServicosOrgaos.getLimesureveyAnswers(311832, username, password)
+print(answers)

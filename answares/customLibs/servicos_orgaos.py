@@ -3,11 +3,13 @@ import dicttoxml
 import requests
 import declxml as xml
 from pprint import pprint
+import json
+import codecs
 
-from django.core.serializers import json
-
-from answares.auth_data import username, password
-from answares.customLibs.pylimerc import PyLimeRc
+# from django.core.serializers import json
+# from answares.auth_data import username, password
+# from answares.customLibs.pylimerc import PyLimeRc
+from .pylimerc import PyLimeRc
 import base64
 
 class ServicosOrgaos:
@@ -148,16 +150,18 @@ class ServicosOrgaos:
         # from import_csv.pylimerc import PyLimeRc
         # from pylimerc import PyLimeRc
 
-        base_url = 'https://pesquisa.gov.br/index.php/admin/remotecontrol'
+        base_url = 'http://172.21.0.3/index.php/admin/remotecontrol'
         # sid = 311832
 
         main = PyLimeRc(base_url)
         key = main.get_session_key(username, password)
 
-        result = main.export_responses(iSurveyID=sid, sLanguageCode='pt-BR', sDocumentType='csv', sCompletionStatus='complete', sHeadingType='full', sResponseType='long')
-        print(result)
+        result = main.export_responses(iSurveyID=sid, sLanguageCode='pt-BR', sDocumentType='json', sCompletionStatus='complete', sHeadingType='full', sResponseType='long')
+        # print(result)
 
         jsonresult = base64.b64decode(result)
+        jsonresult = json.loads(jsonresult)
+        jsonresult = jsonresult['responses']
         return jsonresult
 
 # url = 'https://www.servicos.gov.br/api/v1/servicos/'
@@ -167,5 +171,5 @@ class ServicosOrgaos:
 # orgaos_set = ServicosOrgaos.returnOrgaos()
 
 
-answers = ServicosOrgaos.getLimesureveyAnswers(311832, username, password)
-print(answers)
+# answers = ServicosOrgaos.getLimesureveyAnswers('311832', 'admin', '@dmlive123')
+# print(answers)

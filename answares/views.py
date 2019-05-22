@@ -40,38 +40,17 @@ class PendingsList(APIView):
     List all snippets, or create a new snippet.
     """
     def get(self, request, format=None):
-        '''
-        orgaos = ServicosOrgaos.returnOrgaosObjects()
-        for orgao in orgaos:
-            try:
-                Orgao.objects.create(
-                    id=orgao['orgao_id'],
-                    nome=orgao['orgao_nome']
-                )
-            except:
-                pass
-            for servico in orgao['servicos']:
-                try:
-                    parent = Orgao.objects.get(id=orgao['orgao_id'])
-                    Servico.objects.create(
-                        id=servico['servico_id'],
-                        nome=servico['servico_nome'],
-                        orgao=parent
-                    )
-                except:
-                    pass
-'''
         # atual = time.time()
         # print(atual)
         # if horario_atual - horario_banco > 1h:
         survey = '311832'
-        newAnswares = ConnectDatabase.queryAnswerServiceOther(survey)
+        newAnswares = ServicosOrgaos.getLimesureveyAnswers(survey,'admin','adm123')
         servicos_orgaos = ServicosOrgaos.returnOrgaos()
         for answare in newAnswares:
             try:
-                id_orgao =answare[survey + 'X1X1']
-                if answare[survey + 'X1X3'] == '-oth-':
-                    nome_servico = answare[survey + 'X1X3other']
+                id_orgao = answare['ID da resposta']
+                if answare['Informe o nome do serviço que será avaliado nessa pesquisa.'] == 'Outros':
+                    nome_servico = answare['Informe o nome do serviço que será avaliado nessa pesquisa. [Outros]']
                     id_servico = '0000'
                     answare_id = survey + str(answare['id'])
                 else:

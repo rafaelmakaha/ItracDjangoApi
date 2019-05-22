@@ -154,15 +154,21 @@ class ServicosOrgaos:
         # sid = 311832
 
         main = PyLimeRc(base_url)
-        key = main.get_session_key(username, password)
-
+        main.get_session_key(username, password)
+        # print()
+        # print(key)
+        # print()
         result = main.export_responses(iSurveyID=sid, sLanguageCode='pt-BR', sDocumentType='json', sCompletionStatus='complete', sHeadingType='full', sResponseType='long')
         # print(result)
 
         jsonresult = base64.b64decode(result)
         jsonresult = json.loads(jsonresult)
         jsonresult = jsonresult['responses']
-        return jsonresult
+        result = []
+        for i in range(len(jsonresult)):
+            for id in jsonresult[i].keys():
+                result.append(jsonresult[i][id])
+        return result
 
 # url = 'https://www.servicos.gov.br/api/v1/servicos/'
 # response = requests.get(url)

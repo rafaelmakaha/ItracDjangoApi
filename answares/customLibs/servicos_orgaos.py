@@ -150,11 +150,11 @@ class ServicosOrgaos:
         # from import_csv.pylimerc import PyLimeRc
         # from pylimerc import PyLimeRc
 
-        base_url = 'http://172.21.0.3/index.php/admin/remotecontrol'
+        base_url = 'https://pesquisa.gov.br/index.php/admin/remotecontrol'
         # sid = 311832
 
         main = PyLimeRc(base_url)
-        main.get_session_key(username, password)
+        key = main.get_session_key(username, password)
         # print()
         # print(key)
         # print()

@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 from django.shortcuts import render
 from rest_framework import viewsets
+
+from answares.auth_data import username, password
 from .models import Answares, Horario, Orgao, Servico
 from.serializers import AnswaresSerializer, ServicoSerializer, OrgaoSerializer
 from rest_framework.views import APIView
@@ -44,7 +46,7 @@ class PendingsList(APIView):
         # print(atual)
         # if horario_atual - horario_banco > 1h:
         survey = '311832'
-        newAnswares = ServicosOrgaos.getLimesureveyAnswers(survey,'admin','adm123')
+        newAnswares = ServicosOrgaos.getLimesureveyAnswers(survey,username,password)
         servicos_orgaos = ServicosOrgaos.returnOrgaos()
         for answare in newAnswares:
             try:

@@ -50,11 +50,11 @@ class PendingsList(APIView):
         servicos_orgaos = ServicosOrgaos.returnOrgaos()
         for answare in newAnswares:
             try:
-                id_orgao = answare['ID da resposta']
+                id_orgao = answare['A qual instituição você pertence?'].split('-')[1].strip()
                 if answare['Informe o nome do serviço que será avaliado nessa pesquisa.'] == 'Outros':
                     nome_servico = answare['Informe o nome do serviço que será avaliado nessa pesquisa. [Outros]']
                     id_servico = '0000'
-                    answare_id = survey + str(answare['id'])
+                    answare_id = survey + str(answare['ID da resposta'])
                 else:
                     continue
                 orgao_nome = servicos_orgaos[str(int(id_orgao))][0]['orgao_nome']

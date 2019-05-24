@@ -9,7 +9,7 @@ from rest_framework import viewsets
 
 from answares.auth_data import username, password, servicos_username, servicos_password
 from .models import Answares, Horario, Orgao, Servico
-from.serializers import AnswaresSerializer, ServicoSerializer, OrgaoSerializer
+from .serializers import AnswaresSerializer, ServicoSerializer, OrgaoSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .customLibs.connect_database import ConnectDatabase
@@ -22,13 +22,13 @@ class AnswaresViewSet(viewsets.ModelViewSet):
     serializer_class = AnswaresSerializer
 
     def update(self, request, *args, **kwargs):
-        #alterar: lime_id, servico_id, servico_nome, status
+        # alterar: lime_id, servico_id, servico_nome, status
         instance = self.get_object()
         servicos = ServicosOrgaos.returnServicos()
         if not self.request.data['servico_nome'] in servicos:
             # fazer post para nova ID de serviço
             pass
-        
+
         try:
             survey_id = self.request.data['survey_id']
             answare_id = self.request.data['answare_id']
@@ -41,12 +41,11 @@ class AnswaresViewSet(viewsets.ModelViewSet):
         return Response({"status": "Success"})
 
 
-
-
 class UpdatePortalServicos(APIView):
     """
     List all snippets, or create a new snippet.
     """
+
     def put(self, request, format=None):
         headers = {
             'Content-Type': 'application/json',
@@ -55,32 +54,74 @@ class UpdatePortalServicos(APIView):
         data = {'email': servicos_username, 'senha': servicos_password}
         response = requests.post('https://servicos.nuvem.gov.br/api/v1/autenticar', headers=headers, data=json.dumps(data))
         print(response)
-        token = response.headers['authorization']
+        token = response.headers['authorization'].split(' ')[1]
 
-        # headers_put = {
-        #     'Content-Type': 'application/json',
-        #     'Accept': 'application/json',
-        #     'Authorization': 'meutoken',
-        # }
-        #
-        # data_put = {
-        #   "nome": "string",
-        #   "sigla": "string",
-        #   "descricao": "string",
-        #   "contato": "string",
-        #   "gratuito": "string",
-        #   "servicoDigital": True,
-        #   "linkServicoDigital": "string",
-        # }
-        # response = requests.put('https://servicos.nuvem.gov.br/api/v1/servicos', headers=headers_put, data=json.dumps(data_put))
-        # print(response)
+        headers_put = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': token,
+        }
 
+        data_put = {
+            "nome": "string",
+            "descricao": "valor padrao",
+            "gratuito": "valor padrao",
+            "solicitantes": {
+                "solicitante": [
+                    {
+                        "tipo": "valor padrao",
+                    }
+                ]
+            },
+            "orgao": {
+                "dbId": 37525,
+            },
+            "palavrasChave": {
+                "item": [
+                    {
+                        "item": "valor padrao",
+                    },
+                ]
+            },
+            "condicoesAcessibilidade": "valor padrao",
+            "tratamentoPrioritario": "valor padrao",
+            "tratamentoDispensadoAtendimento": "valor padrao",
+            "etapas": [
+                {
+                    "titulo": "valor padrao",
+                    "descricao": "valor padrao",
+                    "documentos": {
+                        "casos": []
+                    },
+                    "custos": {
+                        "casos": []
+                    },
+                    "canaisDePrestacao": {
+                        "canaisDePrestacao": [
+                            {
+                                "tipo": "telefone",
+                                "descricao": "1111111",
+                            },
+                            {
+                                "tipo": "e-mail",
+                                "descricao": "aaaaa@planejamento.gov.br",
+                            }
+                        ],
+                        "casos": []
+                    },
+                    "tempoTotalEstimado": {}
+                }
+            ]
+        }
+        response = requests.put('https://servicos.nuvem.gov.br/api/v1/servicos', headers=headers_put, data=json.dumps(data_put))
+        print(response)
 
 
 class PendingsList(APIView):
     """
     List all snippets, or create a new snippet.
     """
+
     def get(self, request, format=None):
         # atual = time.time()
         # print(atual)
@@ -101,7 +142,7 @@ class PendingsList(APIView):
                 survey_id = survey
                 lime_id = id_orgao + id_servico
                 Answares.objects.create(
-                    answare_id = answare_id,
+                    answare_id=answare_id,
                     lime_id=lime_id,
                     survey_id=survey_id,
                     servico_id=id_servico,
@@ -117,23 +158,26 @@ class PendingsList(APIView):
         serializer = AnswaresSerializer(pendings, many=True, context={'request': request})
         return Response(serializer.data)
 
+
 class ProcessedsList(APIView):
     """
     List all snippets, or create a new snippet.
     """
+
     def get(self, request, format=None):
         processeds = Answares.objects.filter(status='P')
         serializer = AnswaresSerializer(processeds, many=True, context={'request': request})
         return Response(serializer.data)
 
+
 class OrgaoViewSet(viewsets.ModelViewSet):
     queryset = Orgao.objects.all()
     serializer_class = OrgaoSerializer
 
+
 class ServicoViewSet(viewsets.ModelViewSet):
     queryset = Servico.objects.all()
     serializer_class = ServicoSerializer
-
 
 # class ServicosList(viewsets.ViewSet):
 #     serializer_class = ServicoSerializer

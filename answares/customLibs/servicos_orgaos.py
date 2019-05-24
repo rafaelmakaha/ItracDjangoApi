@@ -144,22 +144,11 @@ class ServicosOrgaos:
             orgaos.append(orgao)
         return orgaos
 
-
     def getLimesureveyAnswers(sid, username, password):
-        # from auth_data import username, password
-        # from import_csv.pylimerc import PyLimeRc
-        # from pylimerc import PyLimeRc
-
         base_url = 'https://pesquisa.gov.br/index.php/admin/remotecontrol'
-        # sid = 311832
-
         main = PyLimeRc(base_url)
         key = main.get_session_key(username, password)
-        # print()
-        # print(key)
-        # print()
         result = main.export_responses(iSurveyID=sid, sLanguageCode='pt-BR', sDocumentType='json', sCompletionStatus='complete', sHeadingType='full', sResponseType='long')
-        # print(result)
 
         jsonresult = base64.b64decode(result)
         jsonresult = json.loads(jsonresult)
@@ -170,12 +159,3 @@ class ServicosOrgaos:
                 result.append(jsonresult[i][id])
         return result
 
-# url = 'https://www.servicos.gov.br/api/v1/servicos/'
-# response = requests.get(url)
-# orgaos_set = ServicosOrgaos.get_orgaos(response.json()['resposta'])
-
-# orgaos_set = ServicosOrgaos.returnOrgaos()
-
-
-# answers = ServicosOrgaos.getLimesureveyAnswers('311832', 'admin', '@dmlive123')
-# print(answers)

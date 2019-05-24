@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import json
+
+import requests
 from django.shortcuts import render
 from rest_framework import viewsets
 
-from answares.auth_data import username, password
+from answares.auth_data import username, password, servicos_username, servicos_password
 from .models import Answares, Horario, Orgao, Servico
 from.serializers import AnswaresSerializer, ServicoSerializer, OrgaoSerializer
 from rest_framework.views import APIView
@@ -37,6 +40,43 @@ class AnswaresViewSet(viewsets.ModelViewSet):
         super(AnswaresViewSet, self).update(request, *args, **kwargs)
         return Response({"status": "Success"})
 
+
+
+
+class UpdatePortalServicos(APIView):
+    """
+    List all snippets, or create a new snippet.
+    """
+    def put(self, request, format=None):
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+        data = {'email': servicos_username, 'senha': servicos_password}
+        response = requests.post('https://servicos.nuvem.gov.br/api/v1/autenticar', headers=headers, data=json.dumps(data))
+        print(response)
+        token = response.headers['authorization']
+
+        # headers_put = {
+        #     'Content-Type': 'application/json',
+        #     'Accept': 'application/json',
+        #     'Authorization': 'meutoken',
+        # }
+        #
+        # data_put = {
+        #   "nome": "string",
+        #   "sigla": "string",
+        #   "descricao": "string",
+        #   "contato": "string",
+        #   "gratuito": "string",
+        #   "servicoDigital": True,
+        #   "linkServicoDigital": "string",
+        # }
+        # response = requests.put('https://servicos.nuvem.gov.br/api/v1/servicos', headers=headers_put, data=json.dumps(data_put))
+        # print(response)
+
+
+
 class PendingsList(APIView):
     """
     List all snippets, or create a new snippet.
@@ -46,7 +86,7 @@ class PendingsList(APIView):
         # print(atual)
         # if horario_atual - horario_banco > 1h:
         survey = '311832'
-        newAnswares = ServicosOrgaos.getLimesureveyAnswers(survey,username,password)
+        newAnswares = ServicosOrgaos.getLimesureveyAnswers(survey, username, password)
         servicos_orgaos = ServicosOrgaos.returnOrgaos()
         for answare in newAnswares:
             try:

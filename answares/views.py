@@ -27,95 +27,20 @@ class AnswaresViewSet(viewsets.ModelViewSet):
         servicos = ServicosOrgaos.returnServicos()
         if not self.request.data['servico_nome'] in servicos:
             # fazer post para nova ID de serviço
+            response = ServicosOrgaos.create_servico(self.request.data,servicos_username,servicos_password)
+            
             pass
-
-        try:
-            survey_id = self.request.data['survey_id']
-            answare_id = self.request.data['answare_id']
-            answare_id = ''.join(answare_id.split(survey_id))
-            servico_id = self.request.data['servico_id']
-            ConnectDatabase.updateQueryAnsware(survey_id=survey_id, answare_id=answare_id, servico_id=servico_id)
-        except:
-            return Response({"status": "Failure"})
+        else:
+            try:
+                survey_id = self.request.data['survey_id']
+                answare_id = self.request.data['answare_id']
+                answare_id = ''.join(answare_id.split(survey_id))
+                servico_id = self.request.data['servico_id']
+                ConnectDatabase.updateQueryAnsware(survey_id=survey_id, answare_id=answare_id, servico_id=servico_id)
+            except:
+                return Response({"status": "Failure"})
         super(AnswaresViewSet, self).update(request, *args, **kwargs)
         return Response({"status": "Success"})
-
-
-class UpdatePortalServicos(APIView):
-    """
-    List all snippets, or create a new snippet.
-    """
-
-    def put(self, request, format=None):
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        }
-        data = {'email': servicos_username, 'senha': servicos_password}
-        response = requests.post('https://servicos.nuvem.gov.br/api/v1/autenticar', headers=headers, data=json.dumps(data))
-        print(response)
-        token = response.headers['authorization'].split(' ')[1]
-
-        headers_put = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': token,
-        }
-
-        data_put = {
-            "nome": "string",
-            "descricao": "valor padrao",
-            "gratuito": "valor padrao",
-            "solicitantes": {
-                "solicitante": [
-                    {
-                        "tipo": "valor padrao",
-                    }
-                ]
-            },
-            "orgao": {
-                "dbId": 37525,
-            },
-            "palavrasChave": {
-                "item": [
-                    {
-                        "item": "valor padrao",
-                    },
-                ]
-            },
-            "condicoesAcessibilidade": "valor padrao",
-            "tratamentoPrioritario": "valor padrao",
-            "tratamentoDispensadoAtendimento": "valor padrao",
-            "etapas": [
-                {
-                    "titulo": "valor padrao",
-                    "descricao": "valor padrao",
-                    "documentos": {
-                        "casos": []
-                    },
-                    "custos": {
-                        "casos": []
-                    },
-                    "canaisDePrestacao": {
-                        "canaisDePrestacao": [
-                            {
-                                "tipo": "telefone",
-                                "descricao": "1111111",
-                            },
-                            {
-                                "tipo": "e-mail",
-                                "descricao": "aaaaa@planejamento.gov.br",
-                            }
-                        ],
-                        "casos": []
-                    },
-                    "tempoTotalEstimado": {}
-                }
-            ]
-        }
-        response = requests.put('https://servicos.nuvem.gov.br/api/v1/servicos', headers=headers_put, data=json.dumps(data_put))
-        print(response)
-
 
 class PendingsList(APIView):
     """
@@ -124,14 +49,36 @@ class PendingsList(APIView):
 
     def get(self, request, format=None):
         # atual = time.time()
-        # print(atual)
+        # print(atual) '1158'
         # if horario_atual - horario_banco > 1h:
+        orgaos = ServicosOrgaos.returnOrgaosObjects()
+        for orgao in orgaos:
+            try:
+                Orgao.objects.create(
+                    id=orgao['orgao_id'],
+                    nome=orgao['orgao_nome']
+                )
+            except:
+                pass
+            for servico in orgao['servicos']:
+                try:
+                    parent = Orgao.objects.get(id=orgao['orgao_id'])
+                    Servico.objects.create(
+                        id=servico['servico_id'],
+                        nome=servico['servico_nome'],
+                        orgao=parent
+                    )
+                except:
+                    pass
+
+
         survey = '311832'
         newAnswares = ServicosOrgaos.getLimesureveyAnswers(survey, username, password)
         servicos_orgaos = ServicosOrgaos.returnOrgaos()
         for answare in newAnswares:
             try:
                 id_orgao = answare['A qual instituição você pertence?'].split('-')[1].strip()
+                id_orgao = id_orgao.zfill(8)
                 if answare['Informe o nome do serviço que será avaliado nessa pesquisa.'] == 'Outros':
                     nome_servico = answare['Informe o nome do serviço que será avaliado nessa pesquisa. [Outros]']
                     id_servico = '0000'

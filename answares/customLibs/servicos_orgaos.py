@@ -9,7 +9,7 @@ import codecs
 # from django.core.serializers import json
 # from answares.auth_data import username, password
 # from answares.customLibs.pylimerc import PyLimeRc
-from .pylimerc import PyLimeRc
+from pylimerc import PyLimeRc
 import base64
 
 class ServicosOrgaos:
@@ -146,10 +146,11 @@ class ServicosOrgaos:
 
     def getLimesureveyAnswers(sid, username, password):
         base_url = 'https://pesquisa.gov.br/index.php/admin/remotecontrol'
+        # base_url = 'http://172.21.0.3/index.php/admin/remotecontrol '
         main = PyLimeRc(base_url)
         key = main.get_session_key(username, password)
         result = main.export_responses(iSurveyID=sid, sLanguageCode='pt-BR', sDocumentType='json', sCompletionStatus='complete', sHeadingType='full', sResponseType='long')
-
+        
         jsonresult = base64.b64decode(result)
         jsonresult = json.loads(jsonresult)
         jsonresult = jsonresult['responses']
@@ -159,3 +160,73 @@ class ServicosOrgaos:
                 result.append(jsonresult[i][id])
         return result
 
+    def create_servico(info,servicos_username,servicos_password):
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+        data = {'email': servicos_username, 'senha': servicos_password}
+        response = requests.post('https://servicos.nuvem.gov.br/api/v1/autenticar', headers=headers, data=json.dumps(data))
+        print(response)
+        token = response.headers['authorization'].split(' ')[1]
+
+        headers_put = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': token,
+        }
+
+        data_put = {
+            "nome": info['servico_nome'],
+            "descricao": "valor padrao",
+            "gratuito": "valor padrao",
+            "solicitantes": {
+                "solicitante": [
+                    {
+                        "tipo": "valor padrao",
+                    }
+                ]
+            },
+            "orgao": {
+                "dbId": 37525,
+            },
+            "palavrasChave": {
+                "item": [
+                    {
+                        "item": "valor padrao",
+                    },
+                ]
+            },
+            "condicoesAcessibilidade": "valor padrao",
+            "tratamentoPrioritario": "valor padrao",
+            "tratamentoDispensadoAtendimento": "valor padrao",
+            "etapas": [
+                {
+                    "titulo": "valor padrao",
+                    "descricao": "valor padrao",
+                    "documentos": {
+                        "casos": []
+                    },
+                    "custos": {
+                        "casos": []
+                    },
+                    "canaisDePrestacao": {
+                        "canaisDePrestacao": [
+                            {
+                                "tipo": "telefone",
+                                "descricao": "1111111",
+                            },
+                            {
+                                "tipo": "e-mail",
+                                "descricao": "aaaaa@planejamento.gov.br",
+                            }
+                        ],
+                        "casos": []
+                    },
+                    "tempoTotalEstimado": {}
+                }
+            ]
+        }
+        response = requests.put('https://servicos.nuvem.gov.br/api/v1/servicos', headers=headers_put, data=json.dumps(data_put))
+        print(response)
+        return response

@@ -13,7 +13,7 @@ urlpatterns = [
     url(r'^', include(router.urls)),
     path('pendings/', PendingsList.as_view()),
     path('processeds/', ProcessedsList.as_view()),
-    path('sugestoes/', Sugestoes.as_view()),
+    path('sugestoes/', Sugestoes.as_view({'post': 'post'})),
 
     # path('servicos/', ServicosList.as_view({'get': 'get'})),
     # path('orgaos/', OrgaosList.as_view({'get': 'get'})),

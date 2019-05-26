@@ -91,7 +91,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
         'USER': 'postgres',
-        'HOST': 'postgres',
+        'HOST': 'localhost',
         'PORT': 5432,
     }
 }
@@ -144,5 +144,5 @@ CORS_ALLOW_METHODS = (
 )
 
 CORS_ORIGIN_WHITELIST = (
-    'localhost:3000',
+    'http://localhost:3000',
 )

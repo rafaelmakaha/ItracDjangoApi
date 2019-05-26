@@ -20,7 +20,7 @@ from Levenshtein.StringMatcher import distance
 
 class Sugestoes(viewsets.ModelViewSet):
 
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         nome = self.request.data['nome']
         qtd = 5
         all_servicos = Servico.objects.all()

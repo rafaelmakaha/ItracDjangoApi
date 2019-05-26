@@ -5,6 +5,7 @@ psycopg2-binary
 django-cors-headers
 configparser==3.7.4
 PyMySQL==0.9.3
+PyYaml==5.1
 requests==2.21.0
 dicttoxml
 declxml

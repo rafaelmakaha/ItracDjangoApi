@@ -134,13 +134,13 @@ class ServicosOrgaos:
         data = ServicosOrgaos.returnOrgaos()
         for key in data:
             orgao = {}
-            orgao['orgao_nome'] = data[key][0]['orgao_nome']
-            orgao['orgao_id'] = data[key][0]['orgao_id']
+            orgao['nome'] = data[key][0]['orgao_nome']
+            orgao['id'] = data[key][0]['orgao_id']
             servicos = []
             for serv in data[key]:
                 servico = {}
-                servico['servico_nome'] = serv['servico_nome']
-                servico['servico_id'] = serv['servico_id']
+                servico['nome'] = serv['servico_nome']
+                servico['id'] = serv['servico_id']
                 servicos.append(servico)
             orgao['servicos'] = servicos
             # orgaos[data[key][i]['servico_nome']] = data[key][i]['servico_id']

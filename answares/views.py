@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import os
+import pickle
 import json
+from datetime import datetime, timedelta
 
 import requests
 from django.shortcuts import render
@@ -16,6 +19,29 @@ from .customLibs.connect_database import ConnectDatabase
 from .customLibs.servicos_orgaos import ServicosOrgaos
 import time
 from Levenshtein.StringMatcher import distance
+
+picke_timefile = "last_refresh.pickle"
+
+
+def save_time():
+    last_refresh = {"last_refresh": datetime.now()}
+
+    pickle_out = open(picke_timefile, "wb")
+    pickle.dump(last_refresh, pickle_out)
+    pickle_out.close()
+
+
+def get_time():
+    tnow = None
+    if os.path.isfile(picke_timefile):
+        with open(picke_timefile, "rb") as pickle_in:
+            try:
+                last_refresh = pickle.load(pickle_in)
+                tnow = last_refresh['last_refresh']
+            except Exception:  # so many things could go wrong, can't be more specific.
+                pass
+
+    return tnow
 
 
 class Sugestoes(viewsets.ModelViewSet):
@@ -66,27 +92,40 @@ class PendingsList(APIView):
     """
 
     def get(self, request, format=None):
-        # atual = time.time()
-        # print(atual) '1158'
-        # if horario_atual - horario_banco > 1h:
-        orgaos = ServicosOrgaos.returnOrgaosObjects()
+        last_bdrefresh = get_time()
+        diff = timedelta(hours=2)
+        if last_bdrefresh:
+            diff = datetime.now() - last_bdrefresh
+
+        refresh = diff > timedelta(hours=1)
+        if refresh:
+            orgaos = ServicosOrgaos.returnOrgaosObjects()
+            save_time()
+        else:
+            objorgaos = Orgao.objects.all()
+            orgaos = []
+            for o in objorgaos:
+                org = {'id': o.id, 'nome': o.nome, 'servicos': Servico.objects.filter(orgao=o).values()}
+                orgaos.append(org)
+
         for orgao in orgaos:
             try:
                 Orgao.objects.create(
-                    id=orgao['orgao_id'],
-                    nome=orgao['orgao_nome']
+                    id=orgao['id'],
+                    nome=orgao['nome']
                 )
-            except:
+            except Exception as e:
                 pass
+
             for servico in orgao['servicos']:
                 try:
-                    parent = Orgao.objects.get(id=orgao['orgao_id'])
+                    parent = Orgao.objects.get(id=orgao['id'])
                     Servico.objects.create(
-                        id=servico['servico_id'],
-                        nome=servico['servico_nome'],
+                        id=servico['id'],
+                        nome=servico['nome'],
                         orgao=parent
                     )
-                except:
+                except Exception as e:
                     pass
 
         survey = '311832'

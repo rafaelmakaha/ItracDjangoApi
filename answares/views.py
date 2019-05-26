@@ -31,7 +31,7 @@ class Sugestoes(viewsets.ModelViewSet):
             list_result.append({'distance': distancia, 'id': s.id})
 
         sorted_list = sorted(list_result, key=lambda i: i['distance'])
-        return sorted_list[1:qtd]
+        return sorted_list[1:qtd+1]
 
 
 class AnswaresViewSet(viewsets.ModelViewSet):

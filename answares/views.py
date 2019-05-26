@@ -28,7 +28,7 @@ class Sugestoes(viewsets.ModelViewSet):
         list_result = []
         for s in all_servicos:
             distancia = distance(nome, s.nome)
-            list_result.append({'distance': distancia, 'id': s.id})
+            list_result.append({'distance': distancia, 'nome': s.nome})
 
         sorted_list = sorted(list_result, key=lambda i: i['distance'])
         return sorted_list[1:qtd+1]

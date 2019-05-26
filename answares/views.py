@@ -15,6 +15,23 @@ from rest_framework.response import Response
 from .customLibs.connect_database import ConnectDatabase
 from .customLibs.servicos_orgaos import ServicosOrgaos
 import time
+from Levenshtein.StringMatcher import distance
+
+
+class Sugestoes(viewsets.ModelViewSet):
+
+    def get(self, request, format=None):
+        nome = self.request.data['nome']
+        qtd = 5
+        all_servicos = Servico.objects.all()
+
+        list_result = []
+        for s in all_servicos:
+            distancia = distance(nome, s.nome)
+            list_result.append({'distance': distancia, 'id': s.id})
+
+        sorted_list = sorted(list_result, key=lambda i: i['distance'])
+        return sorted_list[1:qtd]
 
 
 class AnswaresViewSet(viewsets.ModelViewSet):
@@ -27,8 +44,8 @@ class AnswaresViewSet(viewsets.ModelViewSet):
         servicos = ServicosOrgaos.returnServicos()
         if not self.request.data['servico_nome'] in servicos:
             # fazer post para nova ID de serviço
-            response = ServicosOrgaos.create_servico(self.request.data,servicos_username,servicos_password)
-            
+            response = ServicosOrgaos.create_servico(self.request.data, servicos_username, servicos_password)
+
             pass
         else:
             try:
@@ -41,6 +58,7 @@ class AnswaresViewSet(viewsets.ModelViewSet):
                 return Response({"status": "Failure"})
         super(AnswaresViewSet, self).update(request, *args, **kwargs)
         return Response({"status": "Success"})
+
 
 class PendingsList(APIView):
     """
@@ -71,10 +89,9 @@ class PendingsList(APIView):
                 except:
                     pass
 
-
         survey = '311832'
         newAnswares = ServicosOrgaos.getLimesureveyAnswers(survey, username, password)
-        servicos_orgaos = ServicosOrgaos.returnOrgaos()
+        # servicos_orgaos = ServicosOrgaos.returnOrgaos()
         for answare in newAnswares:
             try:
                 id_orgao = answare['A qual instituição você pertence?'].split('-')[1].strip()
@@ -85,7 +102,8 @@ class PendingsList(APIView):
                     answare_id = survey + str(answare['ID da resposta'])
                 else:
                     continue
-                orgao_nome = servicos_orgaos[str(int(id_orgao))][0]['orgao_nome']
+                # orgao_nome = servicos_orgaos[str(int(id_orgao))][0]['orgao_nome']
+                orgao_nome = answare['A qual instituição você pertence?'].split('-')[0].strip()
                 survey_id = survey
                 lime_id = id_orgao + id_servico
                 Answares.objects.create(

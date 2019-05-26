@@ -8,8 +8,8 @@ import codecs
 
 # from django.core.serializers import json
 # from answares.auth_data import username, password
-# from answares.customLibs.pylimerc import PyLimeRc
-from pylimerc import PyLimeRc
+from answares.customLibs.pylimerc import PyLimeRc
+# from pylimerc import PyLimeRc
 import base64
 
 class ServicosOrgaos:
@@ -108,6 +108,7 @@ class ServicosOrgaos:
     def returnOrgaos():
         return ServicosOrgaos.get_orgaos(ServicosOrgaos.returnResponse().json()['resposta'])
 
+
     def returnServicos():
         servicos = []
         data = ServicosOrgaos.returnOrgaos()
@@ -115,6 +116,7 @@ class ServicosOrgaos:
             for i in range(len(data[key])):
                 servicos.append(data[key][i]['servico_nome'])
         return servicos
+
     def returnServicosObjects():
         servicos = []
         data = ServicosOrgaos.returnOrgaos()
@@ -126,6 +128,7 @@ class ServicosOrgaos:
                 # servicos[data[key][i]['servico_nome']] = data[key][i]['servico_id']
                 servicos.append(servico)
         return servicos
+
     def returnOrgaosObjects():
         orgaos = []
         data = ServicosOrgaos.returnOrgaos()

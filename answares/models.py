@@ -14,11 +14,11 @@ class Answares(models.Model):
     lime_id = models.CharField(max_length=120)
     survey_id = models.CharField(max_length=120)
     servico_id = models.CharField(max_length=120)
-    servico_nome = models.CharField(max_length=120)
+    servico_nome = models.CharField(max_length=400)
     orgao_id = models.CharField(max_length=120)
-    tipo_solicitante = models.CharField(max_length=50, null=True)
+    tipo_solicitante = models.CharField(max_length=120, null=True)
     titulo_etapa = models.CharField(max_length=120, null=True)
-    tempo_total_estimado_dias = models.CharField(max_length=50, default=0)
+    tempo_total_estimado_dias = models.CharField(max_length=50, default="-1")
 
     orgao_nome = models.CharField(
         max_length=120
@@ -33,6 +33,10 @@ class Orgao(models.Model):
     id = models.CharField(
         primary_key=True,
         max_length=12
+    )
+    dbid = models.CharField(
+        max_length=12,
+        default='0'
     )
     nome = models.CharField(
         max_length=200

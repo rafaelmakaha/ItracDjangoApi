@@ -19,6 +19,7 @@ from rest_framework.response import Response
 from .customLibs.connect_database import ConnectDatabase
 from .customLibs.servicos_orgaos import ServicosOrgaos
 import time
+import re
 from Levenshtein.StringMatcher import distance
 
 picke_timefile = "last_refresh.pickle"
@@ -43,6 +44,15 @@ def get_time():
                 pass
 
     return tnow
+
+
+def parse_answer(inputdict, keypart, criteria):
+    listresult = [{key:value} for key, value in inputdict.items() if keypart in key and value==criteria]
+    answers = []
+    for l in listresult:
+        m = re.search(r"\[(.*)\]", next(iter(l)))
+        answers.append(m.group(1))
+    return answers
 
 
 class Sugestoes(viewsets.ModelViewSet):
@@ -70,7 +80,7 @@ class AnswaresViewSet(viewsets.ModelViewSet):
         if not self.request.data['servico_nome'] in servicos:
             ans = Answares.objects.get(pk=self.request.data['answare_id'])
             response = ServicosOrgaos.create_servico(ans.__dict__, servicos_username, servicos_password)
-            servico_id = response.data['servico_id']
+            servico_id = response.json()['resposta']
         else:
             servico_id = self.request.data['servico_id']
 
@@ -92,7 +102,7 @@ class PendingsList(APIView):
     """
 
     def get(self, request, format=None):
-        survey = '311832'
+        survey = '396326'
         last_bdrefresh = get_time()
         diff = timedelta(hours=2)
         if last_bdrefresh:
@@ -106,7 +116,8 @@ class PendingsList(APIView):
                 try:
                     Orgao.objects.create(
                         id=orgao['id'],
-                        nome=orgao['nome']
+                        nome=orgao['nome'],
+                        dbid=orgao['dbid']
                     )
                 except Exception as e:
                     pass
@@ -122,40 +133,54 @@ class PendingsList(APIView):
                     except Exception as e:
                         pass
 
-            newAnswares = ServicosOrgaos.getLimesureveyAnswers(survey, username, password)
-            for answare in newAnswares:
-                try:
-                    id_orgao = answare['A qual instituição você pertence?'].split('-')[1].strip()
-                    id_orgao = id_orgao.zfill(8)
-                    if answare['Informe o nome do serviço que será avaliado nessa pesquisa.'] == 'Outros':
-                        nome_servico = answare['Informe o nome do serviço que será avaliado nessa pesquisa. [Outros]']
-                        id_servico = '0000'
-                        answare_id = survey + str(answare['ID da resposta'])
-                    else:
-                        continue
-                    # orgao_nome = servicos_orgaos[str(int(id_orgao))][0]['orgao_nome']
-                    orgao_nome = answare['A qual instituição você pertence?'].split('-')[0].strip()
-                    tipo_solicitante = "" #answare['tipo_solicitante']
-                    titulo_etapa = "" #answare['tipo_solicitante']
-                    tempo_total_estimado_dias = "" #answare['tipo_solicitante']
-                    survey_id = survey
-                    lime_id = id_orgao + id_servico
-                    Answares.objects.create(
-                        answare_id=answare_id,
-                        lime_id=lime_id,
-                        survey_id=survey_id,
-                        servico_id=id_servico,
-                        orgao_id=id_orgao,
-                        orgao_nome=orgao_nome,
-                        servico_nome=nome_servico,
-                        status="N",
-                        tipo_solicitante=tipo_solicitante,
-                        titulo_etapa=titulo_etapa,
-                        tempo_total_estimado_dias=tempo_total_estimado_dias,
-                    )
-                except:
-                    print('Valores incompatíveis')
-                    continue
+        newAnswares = ServicosOrgaos.getLimesureveyAnswers(survey, username, password)
+        for answare in newAnswares:
+            id_nome_orgao = answare['A qual instituição você pertence?'].split('-')
+            if len(id_nome_orgao) <= 1:
+                continue
+
+            id_orgao = id_nome_orgao[1].strip().zfill(8)
+            if not id_orgao.isdigit():
+                continue
+            if answare['Informe o nome do serviço que será avaliado nessa pesquisa.'] == 'Outros':
+                nome_servico = answare['Informe o nome do serviço que será avaliado nessa pesquisa. [Outros]']
+                id_servico = '0000'
+                answare_id = survey + str(answare['ID da resposta'])
+            else:
+                continue
+
+            orgao_nome = id_nome_orgao[0].strip()
+            tipo_solicitante_tmp = parse_answer(answare, 'O serviço\xa0é oferecido a pessoas físicas, jurídicas ou ambas?', 'Sim')
+
+            if 'Ambas' in tipo_solicitante_tmp:
+                tipo_solicitante = [{"tipo": "Pessoa Física"}, {"tipo": "Pessoa Jurídica"}]
+            else:
+                tipo_solicitante = [{"tipo": "Pessoa {0}".format(i)} for i in tipo_solicitante_tmp if i != 'Ambas']
+
+            titulo_etapa = ""
+            tempo_total_estimado_dias = answare['Quantos dias o usuário espera até a efetiva entrega do serviço?']
+            if not tempo_total_estimado_dias:
+                tempo_total_estimado_dias="-1"
+            survey_id = survey
+            lime_id = id_orgao + id_servico
+
+            try:
+                Answares.objects.create(
+                    answare_id=answare_id,
+                    lime_id=lime_id,
+                    survey_id=survey_id,
+                    servico_id=id_servico,
+                    orgao_id=id_orgao,
+                    orgao_nome=orgao_nome,
+                    servico_nome=nome_servico,
+                    status="N",
+                    tipo_solicitante=json.dumps(tipo_solicitante),
+                    titulo_etapa=titulo_etapa,
+                    tempo_total_estimado_dias=tempo_total_estimado_dias,
+                )
+            except Exception as e:
+                print('Valores incompatíveis')
+                continue
 
 
         pendings = Answares.objects.filter(status='N')

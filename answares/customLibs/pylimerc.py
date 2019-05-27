@@ -62,10 +62,10 @@ class PyLimeRc:
         import requests
         import sys
 
-        print("Method: %s" % method)
-        print("Params before: %s" % params)
+        # print("Method: %s" % method)
+        # print("Params before: %s" % params)
         params = self.__sort_params(method,params)
-        print("Params sorted: %s" % params)
+        # print("Params sorted: %s" % params)
 
         payload = {"method":method,"params":params,"id":1}
         try:

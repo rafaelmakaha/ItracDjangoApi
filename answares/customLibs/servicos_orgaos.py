@@ -42,13 +42,14 @@ class ServicosOrgaos:
             servico_id = i['id'].split('/')[6]
             servico_nome = i['nome']
             orgao_id = i['orgao']['id'].split('/')[5]
+            orgao_dbid = i['orgao']['dbId']
             orgao_nome = i['orgao']['nomeOrgao']
             if orgao_id in result:
                 result[orgao_id].append({'servico_id': servico_id, 'servico_nome': '{0}'.format(servico_nome), 'orgao_nome': '{0}'.format(orgao_nome,),
-                                        'orgao_id': orgao_id.zfill(8)})
+                                        'orgao_id': orgao_id.zfill(8), 'orgao_dbid': orgao_dbid})
             else:
                 result[orgao_id] = [{'servico_id': servico_id, 'servico_nome': '{0}'.format(servico_nome), 'orgao_nome': '{0}'.format(orgao_nome),
-                                    'orgao_id': orgao_id.zfill(8)}]
+                                    'orgao_id': orgao_id.zfill(8), 'orgao_dbid': orgao_dbid}]
 
         return result
 
@@ -135,6 +136,7 @@ class ServicosOrgaos:
             orgao = {}
             orgao['nome'] = data[key][0]['orgao_nome']
             orgao['id'] = data[key][0]['orgao_id']
+            orgao['dbid'] = data[key][0]['orgao_dbid']
             servicos = []
             for serv in data[key]:
                 servico = {}

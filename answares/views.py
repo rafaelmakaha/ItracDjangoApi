@@ -23,6 +23,7 @@ import re
 from Levenshtein.StringMatcher import distance
 
 picke_timefile = "last_refresh.pickle"
+survey = '396326'
 
 
 def save_time():
@@ -79,8 +80,14 @@ class AnswaresViewSet(viewsets.ModelViewSet):
         servicos = Servico.objects.values_list('nome', flat=True)
         if not self.request.data['servico_nome'] in servicos:
             ans = Answares.objects.get(pk=self.request.data['answare_id'])
+            ans.servico_nome = self.request.data['servico_nome']
             response = ServicosOrgaos.create_servico(ans.__dict__, servicos_username, servicos_password)
             servico_id = response.json()['resposta']
+            try:
+                ans.servico_id = servico_id
+                ans.save()
+            except Answares.DoesNotExist:
+                pass
         else:
             servico_id = self.request.data['servico_id']
 
@@ -100,9 +107,7 @@ class PendingsList(APIView):
     """
     List all snippets, or create a new snippet.
     """
-
     def get(self, request, format=None):
-        survey = '396326'
         last_bdrefresh = get_time()
         diff = timedelta(hours=2)
         if last_bdrefresh:

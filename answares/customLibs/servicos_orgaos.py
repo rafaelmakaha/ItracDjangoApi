@@ -192,7 +192,7 @@ class ServicosOrgaos:
                 ]
             },
             "orgao": {
-                "dbId": 37525,
+                "dbId": inform['orgao_dbid'],
             },
             "palavrasChave": {
                 "item": [

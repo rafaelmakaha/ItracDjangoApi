@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import requests
 from django.shortcuts import render
 from rest_framework import viewsets
+from rest_framework.decorators import action
 
 from answares.auth_data import username, password, servicos_username, servicos_password
 from .models import Answares, Horario, Orgao, Servico
@@ -57,7 +58,7 @@ class Sugestoes(viewsets.ModelViewSet):
             list_result.append({'distance': distancia, 'nome': s.nome})
 
         sorted_list = sorted(list_result, key=lambda i: i['distance'])
-        return Response({"sugestoes": sorted_list[1:qtd+1]})
+        return Response({"sugestoes": sorted_list[1:qtd + 1]})
 
 
 class AnswaresViewSet(viewsets.ModelViewSet):
@@ -65,23 +66,22 @@ class AnswaresViewSet(viewsets.ModelViewSet):
     serializer_class = AnswaresSerializer
 
     def update(self, request, *args, **kwargs):
-        # alterar: lime_id, servico_id, servico_nome, status
-        instance = self.get_object()
-        servicos = ServicosOrgaos.returnServicos()
+        servicos = Servico.objects.values_list('nome', flat=True)
         if not self.request.data['servico_nome'] in servicos:
-            # fazer post para nova ID de serviço
-            response = ServicosOrgaos.create_servico(self.request.data, servicos_username, servicos_password)
-
-            pass
+            ans = Answares.objects.get(pk=self.request.data['answare_id'])
+            response = ServicosOrgaos.create_servico(ans.__dict__, servicos_username, servicos_password)
+            servico_id = response.data['servico_id']
         else:
-            try:
-                survey_id = self.request.data['survey_id']
-                answare_id = self.request.data['answare_id']
-                answare_id = ''.join(answare_id.split(survey_id))
-                servico_id = self.request.data['servico_id']
-                ConnectDatabase.updateQueryAnsware(survey_id=survey_id, answare_id=answare_id, servico_id=servico_id)
-            except:
-                return Response({"status": "Failure"})
+            servico_id = self.request.data['servico_id']
+
+        try:
+            survey_id = self.request.data['survey_id']
+            answare_id = self.request.data['answare_id']
+            answare_id = ''.join(answare_id.split(survey_id))
+            ConnectDatabase.updateQueryAnsware(survey_id=survey_id, answare_id=answare_id, servico_id=servico_id)
+        except:
+            return Response({"status": "Failure"})
+
         super(AnswaresViewSet, self).update(request, *args, **kwargs)
         return Response({"status": "Success"})
 
@@ -92,6 +92,7 @@ class PendingsList(APIView):
     """
 
     def get(self, request, format=None):
+        survey = '311832'
         last_bdrefresh = get_time()
         diff = timedelta(hours=2)
         if last_bdrefresh:
@@ -101,63 +102,62 @@ class PendingsList(APIView):
         if refresh:
             orgaos = ServicosOrgaos.returnOrgaosObjects()
             save_time()
-        else:
-            objorgaos = Orgao.objects.all()
-            orgaos = []
-            for o in objorgaos:
-                org = {'id': o.id, 'nome': o.nome, 'servicos': Servico.objects.filter(orgao=o).values()}
-                orgaos.append(org)
-
-        for orgao in orgaos:
-            try:
-                Orgao.objects.create(
-                    id=orgao['id'],
-                    nome=orgao['nome']
-                )
-            except Exception as e:
-                pass
-
-            for servico in orgao['servicos']:
+            for orgao in orgaos:
                 try:
-                    parent = Orgao.objects.get(id=orgao['id'])
-                    Servico.objects.create(
-                        id=servico['id'],
-                        nome=servico['nome'],
-                        orgao=parent
+                    Orgao.objects.create(
+                        id=orgao['id'],
+                        nome=orgao['nome']
                     )
                 except Exception as e:
                     pass
 
-        survey = '311832'
-        newAnswares = ServicosOrgaos.getLimesureveyAnswers(survey, username, password)
-        # servicos_orgaos = ServicosOrgaos.returnOrgaos()
-        for answare in newAnswares:
-            try:
-                id_orgao = answare['A qual instituição você pertence?'].split('-')[1].strip()
-                id_orgao = id_orgao.zfill(8)
-                if answare['Informe o nome do serviço que será avaliado nessa pesquisa.'] == 'Outros':
-                    nome_servico = answare['Informe o nome do serviço que será avaliado nessa pesquisa. [Outros]']
-                    id_servico = '0000'
-                    answare_id = survey + str(answare['ID da resposta'])
-                else:
+                for servico in orgao['servicos']:
+                    try:
+                        parent = Orgao.objects.get(id=orgao['id'])
+                        Servico.objects.create(
+                            id=servico['id'],
+                            nome=servico['nome'],
+                            orgao=parent
+                        )
+                    except Exception as e:
+                        pass
+
+            newAnswares = ServicosOrgaos.getLimesureveyAnswers(survey, username, password)
+            for answare in newAnswares:
+                try:
+                    id_orgao = answare['A qual instituição você pertence?'].split('-')[1].strip()
+                    id_orgao = id_orgao.zfill(8)
+                    if answare['Informe o nome do serviço que será avaliado nessa pesquisa.'] == 'Outros':
+                        nome_servico = answare['Informe o nome do serviço que será avaliado nessa pesquisa. [Outros]']
+                        id_servico = '0000'
+                        answare_id = survey + str(answare['ID da resposta'])
+                    else:
+                        continue
+                    # orgao_nome = servicos_orgaos[str(int(id_orgao))][0]['orgao_nome']
+                    orgao_nome = answare['A qual instituição você pertence?'].split('-')[0].strip()
+                    tipo_solicitante = "" #answare['tipo_solicitante']
+                    titulo_etapa = "" #answare['tipo_solicitante']
+                    tempo_total_estimado_dias = "" #answare['tipo_solicitante']
+                    survey_id = survey
+                    lime_id = id_orgao + id_servico
+                    Answares.objects.create(
+                        answare_id=answare_id,
+                        lime_id=lime_id,
+                        survey_id=survey_id,
+                        servico_id=id_servico,
+                        orgao_id=id_orgao,
+                        orgao_nome=orgao_nome,
+                        servico_nome=nome_servico,
+                        status="N",
+                        tipo_solicitante=tipo_solicitante,
+                        titulo_etapa=titulo_etapa,
+                        tempo_total_estimado_dias=tempo_total_estimado_dias,
+                    )
+                except:
+                    print('Valores incompatíveis')
                     continue
-                # orgao_nome = servicos_orgaos[str(int(id_orgao))][0]['orgao_nome']
-                orgao_nome = answare['A qual instituição você pertence?'].split('-')[0].strip()
-                survey_id = survey
-                lime_id = id_orgao + id_servico
-                Answares.objects.create(
-                    answare_id=answare_id,
-                    lime_id=lime_id,
-                    survey_id=survey_id,
-                    servico_id=id_servico,
-                    orgao_id=id_orgao,
-                    orgao_nome=orgao_nome,
-                    servico_nome=nome_servico,
-                    status="N"
-                )
-            except:
-                print('Valores incompatíveis')
-                continue
+
+
         pendings = Answares.objects.filter(status='N')
         serializer = AnswaresSerializer(pendings, many=True, context={'request': request})
         return Response(serializer.data)

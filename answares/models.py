@@ -16,6 +16,10 @@ class Answares(models.Model):
     servico_id = models.CharField(max_length=120)
     servico_nome = models.CharField(max_length=120)
     orgao_id = models.CharField(max_length=120)
+    tipo_solicitante = models.CharField(max_length=50, null=True)
+    titulo_etapa = models.CharField(max_length=120, null=True)
+    tempo_total_estimado_dias = models.CharField(max_length=50, default=0)
+
     orgao_nome = models.CharField(
         max_length=120
     )

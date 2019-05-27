@@ -108,7 +108,6 @@ class ServicosOrgaos:
     def returnOrgaos():
         return ServicosOrgaos.get_orgaos(ServicosOrgaos.returnResponse().json()['resposta'])
 
-
     def returnServicos():
         servicos = []
         data = ServicosOrgaos.returnOrgaos()
@@ -163,7 +162,7 @@ class ServicosOrgaos:
                 result.append(jsonresult[i][id])
         return result
 
-    def create_servico(info,servicos_username,servicos_password):
+    def create_servico(inform, servicos_username, servicos_password):
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -180,13 +179,13 @@ class ServicosOrgaos:
         }
 
         data_put = {
-            "nome": info['servico_nome'],
-            "descricao": "valor padrao",
-            "gratuito": "valor padrao",
+            "nome": inform['servico_nome'],
+            "descricao": "",
+            "gratuito": "",
             "solicitantes": {
                 "solicitante": [
                     {
-                        "tipo": "valor padrao",
+                        "tipo": inform['tipo_solicitante'],
                     }
                 ]
             },
@@ -196,17 +195,17 @@ class ServicosOrgaos:
             "palavrasChave": {
                 "item": [
                     {
-                        "item": "valor padrao",
+                        "item": "",
                     },
                 ]
             },
-            "condicoesAcessibilidade": "valor padrao",
-            "tratamentoPrioritario": "valor padrao",
-            "tratamentoDispensadoAtendimento": "valor padrao",
+            "condicoesAcessibilidade": "",
+            "tratamentoPrioritario": "",
+            "tratamentoDispensadoAtendimento": "",
             "etapas": [
                 {
-                    "titulo": "valor padrao",
-                    "descricao": "valor padrao",
+                    "titulo": inform['titulo_etapa'],
+                    "descricao": "",
                     "documentos": {
                         "casos": []
                     },
@@ -217,16 +216,21 @@ class ServicosOrgaos:
                         "canaisDePrestacao": [
                             {
                                 "tipo": "telefone",
-                                "descricao": "1111111",
+                                "descricao": "",
                             },
                             {
                                 "tipo": "e-mail",
-                                "descricao": "aaaaa@planejamento.gov.br",
+                                "descricao": "",
                             }
                         ],
                         "casos": []
                     },
-                    "tempoTotalEstimado": {}
+                    "tempoTotalEstimado": {
+                        # "emMedia": {
+                        #     "max": int(inform['tempo_total_estimado_dias']),
+                        #     "unidade": "dias corridos"
+                        # },
+                    }
                 }
             ]
         }

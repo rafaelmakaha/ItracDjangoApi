@@ -14,6 +14,7 @@ urlpatterns = [
     path('pendings/', PendingsList.as_view()),
     path('processeds/', ProcessedsList.as_view()),
     path('sugestoes/', Sugestoes.as_view({'post': 'post'})),
+    # path('answares/', AnswaresViewSet.as_view({'put':'update'})),
 
     # path('servicos/', ServicosList.as_view({'get': 'get'})),
     # path('orgaos/', OrgaosList.as_view({'get': 'get'})),

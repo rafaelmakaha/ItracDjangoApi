@@ -66,7 +66,7 @@ class Sugestoes(viewsets.ModelViewSet):
         list_result = []
         for s in all_servicos:
             distancia = distance(nome, s.nome)
-            list_result.append({'distance': distancia, 'nome': s.nome})
+            list_result.append({'distance': distancia, 'nome': s.nome, 'id': s.id})
 
         sorted_list = sorted(list_result, key=lambda i: i['distance'])
         return Response({"sugestoes": sorted_list[1:qtd + 1]})
@@ -79,15 +79,19 @@ class AnswaresViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         servicos = Servico.objects.values_list('nome', flat=True)
         if not self.request.data['servico_nome'] in servicos:
-            ans = Answares.objects.get(pk=self.request.data['answare_id'])
+            ans = Answares.objects.get(pk=int(self.request.data['answare_id']))
             ans.servico_nome = self.request.data['servico_nome']
             response = ServicosOrgaos.create_servico(ans.__dict__, servicos_username, servicos_password)
             servico_id = response.json()['resposta']
-            try:
+            if servico_id:
                 ans.servico_id = servico_id
-                ans.save()
-            except Answares.DoesNotExist:
-                pass
+                try:
+
+                    ans.save()
+                except Answares.DoesNotExist:
+                    pass
+            else:
+                return Response({"status": "Failure"})
         else:
             servico_id = self.request.data['servico_id']
 
@@ -140,11 +144,11 @@ class PendingsList(APIView):
 
         newAnswares = ServicosOrgaos.getLimesureveyAnswers(survey, username, password)
         for answare in newAnswares:
-            id_nome_orgao = answare['A qual instituição você pertence?'].split('-')
-            if len(id_nome_orgao) <= 1:
+            m_id_orgao = re.search(r"\[(\d*)\]", answare['A qual instituição você pertence?'])
+            if not m_id_orgao:
                 continue
-
-            id_orgao = id_nome_orgao[1].strip().zfill(8)
+            id_orgao = m_id_orgao.group(1)
+            id_orgao = id_orgao.strip().zfill(8)
             if not id_orgao.isdigit():
                 continue
             if answare['Informe o nome do serviço que será avaliado nessa pesquisa.'] == 'Outros':
@@ -154,7 +158,7 @@ class PendingsList(APIView):
             else:
                 continue
 
-            orgao_nome = id_nome_orgao[0].strip()
+            orgao_nome = answare['A qual instituição você pertence?'].split('[')[0].strip()
             tipo_solicitante_tmp = parse_answer(answare, 'O serviço\xa0é oferecido a pessoas físicas, jurídicas ou ambas?', 'Sim')
 
             if 'Ambas' in tipo_solicitante_tmp:
@@ -168,6 +172,7 @@ class PendingsList(APIView):
                 tempo_total_estimado_dias="-1"
             survey_id = survey
             lime_id = id_orgao + id_servico
+            orgao_dbid = Orgao.objects.get(pk=id_orgao)
 
             try:
                 Answares.objects.create(
@@ -176,6 +181,7 @@ class PendingsList(APIView):
                     survey_id=survey_id,
                     servico_id=id_servico,
                     orgao_id=id_orgao,
+                    orgao_dbid=orgao_dbid.dbid,
                     orgao_nome=orgao_nome,
                     servico_nome=nome_servico,
                     status="N",

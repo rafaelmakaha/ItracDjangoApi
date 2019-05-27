@@ -170,7 +170,7 @@ class ConnectDatabase:
             
             # execute a statement
 
-            cur.execute('UPDATE limesurvey.survey_' + survey_id + ' SET ' + survey_id + 'X1X3="' + servico_id + '", ' + survey_id + 'X1X3other="" WHERE id="'+ answare_id +'";')
+            cur.execute('UPDATE limesurvey.survey_' + survey_id + ' SET ' + survey_id + 'X1X3="' + str(servico_id) + '", ' + survey_id + 'X1X3other="" WHERE id="'+ answare_id +'";')
             query = cur.fetchall()
             # close the communication with the SQL
             cur.close()

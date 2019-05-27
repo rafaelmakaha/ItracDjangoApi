@@ -81,5 +81,6 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 auth_data.py
+database.ini
 
 .idea/*

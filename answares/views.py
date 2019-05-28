@@ -81,9 +81,9 @@ class AnswaresViewSet(viewsets.ModelViewSet):
         if not self.request.data['servico_nome'] in servicos:
             ans = Answares.objects.get(pk=int(self.request.data['answare_id']))
             ans.servico_nome = self.request.data['servico_nome']
-            # response = ServicosOrgaos.create_servico(ans.__dict__, servicos_username, servicos_password)
-            # servico_id = response.json()['resposta']
-            servico_id = '1111'
+            response = ServicosOrgaos.create_servico(ans.__dict__, servicos_username, servicos_password)
+            servico_id = response.json()['resposta']
+            # servico_id = '1111'
             if servico_id:
                 ans.servico_id = servico_id
             else:

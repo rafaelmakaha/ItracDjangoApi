@@ -78,6 +78,7 @@ class AnswaresViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         servicos = Servico.objects.values_list('nome', flat=True)
+        ans = None
         if not self.request.data['servico_nome'] in servicos:
             ans = Answares.objects.get(pk=int(self.request.data['answare_id']))
             ans.servico_nome = self.request.data['servico_nome']
@@ -95,15 +96,18 @@ class AnswaresViewSet(viewsets.ModelViewSet):
         answare_id = self.request.data['answare_id']
         answare_id = ''.join(answare_id.split(survey_id))
         ConnectDatabase.updateQueryAnsware(survey_id=survey_id, answare_id=answare_id, servico_id=servico_id)
-        ans.status = 'P'
-        try:
-            ans.save()
-        except Answares.DoesNotExist:
-            pass
 
-        # super(AnswaresViewSet, self).update(request, *args, **kwargs)
-        return Response({"status": "Success"})
+        if ans:
+            ans.status = 'P'
+            try:
+                ans.save()
+            except Answares.DoesNotExist:
+                pass
 
+            # super(AnswaresViewSet, self).update(request, *args, **kwargs)
+            return Response({"status": "Success"})
+        else:
+            return Response({"status": "Failure"})
 
 class PendingsList(APIView):
     """

@@ -104,10 +104,9 @@ class AnswaresViewSet(viewsets.ModelViewSet):
             except Answares.DoesNotExist:
                 pass
 
-            # super(AnswaresViewSet, self).update(request, *args, **kwargs)
-            return Response({"status": "Success"})
-        else:
-            return Response({"status": "Failure"})
+        # super(AnswaresViewSet, self).update(request, *args, **kwargs)
+        return Response({"status": "Success"})
+
 
 class PendingsList(APIView):
     """

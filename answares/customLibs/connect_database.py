@@ -157,6 +157,7 @@ class ConnectDatabase:
         """ Connect to the SQL database server """
         conn = None
         query = []
+        errorstate = None
         try:
             # read connection parameters
             params = config()
@@ -177,11 +178,16 @@ class ConnectDatabase:
 
         except (Exception, pymysql.DatabaseError) as error:
             print(error)
+            errorstate = error
         finally:
             if conn is not None:
                 conn.close()
                 print('Database connection closed.')
-        return query
+
+        if errorstate:
+            return errorstate
+        else:
+            return None
 
 if __name__ == '__main__':
     print((ConnectDatabase.queryAnswerServiceOther('311832')))

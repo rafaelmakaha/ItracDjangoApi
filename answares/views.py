@@ -60,8 +60,10 @@ class Sugestoes(viewsets.ModelViewSet):
 
     def post(self, request, format=None):
         nome = self.request.data['nome']
+        # orgao_id = self.request.data['orgao_id']
         qtd = 5
         all_servicos = Servico.objects.all()
+        # all_servicos_orgao = Servico.objects.filter(orgao__id=orgao_id)
 
         list_result = []
         for s in all_servicos:
@@ -77,34 +79,36 @@ class AnswaresViewSet(viewsets.ModelViewSet):
     serializer_class = AnswaresSerializer
 
     def update(self, request, *args, **kwargs):
-        servicos = Servico.objects.values_list('nome', flat=True)
-        ans = None
-        if not self.request.data['servico_nome'] in servicos:
-            ans = Answares.objects.get(pk=int(self.request.data['answare_id']))
+        target_servico = Servico.objects.filter(nome=self.request.data['servico_nome']).first()
+        ans = Answares.objects.get(pk=int(self.request.data['answare_id']))
+        if not target_servico:
             ans.servico_nome = self.request.data['servico_nome']
-            response = ServicosOrgaos.create_servico(ans.__dict__, servicos_username, servicos_password)
-            servico_id = response.json()['resposta']
-            # servico_id = '1111'
+            # response = ServicosOrgaos.create_servico(ans.__dict__, servicos_username, servicos_password)
+            # servico_id = response.json()['resposta']
+            servico_id = '1111'
             if servico_id:
                 ans.servico_id = servico_id
             else:
-                return Response({"status": "Failure"})
+                return Response({"status": "Failure"}, status=500)
         else:
             servico_id = self.request.data['servico_id']
+            ans.servico_id = servico_id
+            ans.servico_nome = target_servico.nome
+
+        ans.status = 'P'
+        try:
+            ans.save()
+        except Exception as e:
+            print(e)
+            return Response({"status": "Failure"}, status=500)
 
         survey_id = self.request.data['survey_id']
         answare_id = self.request.data['answare_id']
         answare_id = ''.join(answare_id.split(survey_id))
-        ConnectDatabase.updateQueryAnsware(survey_id=survey_id, answare_id=answare_id, servico_id=servico_id)
+        dberror = ConnectDatabase.updateQueryAnsware(survey_id=survey_id, answare_id=answare_id, servico_id=servico_id)
+        if dberror:
+            return Response({"status": "Failure"}, status=500)
 
-        if ans:
-            ans.status = 'P'
-            try:
-                ans.save()
-            except Answares.DoesNotExist:
-                pass
-
-        # super(AnswaresViewSet, self).update(request, *args, **kwargs)
         return Response({"status": "Success"})
 
 
@@ -143,56 +147,56 @@ class PendingsList(APIView):
                     except Exception as e:
                         pass
 
-        newAnswares = ServicosOrgaos.getLimesureveyAnswers(survey, username, password)
-        for answare in newAnswares:
-            m_id_orgao = re.search(r"\[(\d*)\]", answare['A qual instituição você pertence?'])
-            if not m_id_orgao:
-                continue
-            id_orgao = m_id_orgao.group(1)
-            id_orgao = id_orgao.strip().zfill(8)
-            if not id_orgao.isdigit():
-                continue
-            if answare['Informe o nome do serviço que será avaliado nessa pesquisa.'] == 'Outros':
-                nome_servico = answare['Informe o nome do serviço que será avaliado nessa pesquisa. [Outros]']
-                id_servico = '0000'
-                answare_id = survey + str(answare['ID da resposta'])
-            else:
-                continue
+            newAnswares = ServicosOrgaos.getLimesureveyAnswers(survey, username, password)
+            for answare in newAnswares:
+                m_id_orgao = re.search(r"\[(\d*)\]", answare['A qual instituição você pertence?'])
+                if not m_id_orgao:
+                    continue
+                id_orgao = m_id_orgao.group(1)
+                id_orgao = id_orgao.strip().zfill(8)
+                if not id_orgao.isdigit():
+                    continue
+                if answare['Informe o nome do serviço que será avaliado nessa pesquisa.'] == 'Outros':
+                    nome_servico = answare['Informe o nome do serviço que será avaliado nessa pesquisa. [Outros]']
+                    id_servico = '0000'
+                    answare_id = survey + str(answare['ID da resposta'])
+                else:
+                    continue
 
-            orgao_nome = answare['A qual instituição você pertence?'].split('[')[0].strip()
-            tipo_solicitante_tmp = parse_answer(answare, 'O serviço\xa0é oferecido a pessoas físicas, jurídicas ou ambas?', 'Sim')
+                orgao_nome = answare['A qual instituição você pertence?'].split('[')[0].strip()
+                tipo_solicitante_tmp = parse_answer(answare, 'O serviço\xa0é oferecido a pessoas físicas, jurídicas ou ambas?', 'Sim')
 
-            if 'Ambas' in tipo_solicitante_tmp:
-                tipo_solicitante = [{"tipo": "Pessoa Física"}, {"tipo": "Pessoa Jurídica"}]
-            else:
-                tipo_solicitante = [{"tipo": "Pessoa {0}".format(i)} for i in tipo_solicitante_tmp if i != 'Ambas']
+                if 'Ambas' in tipo_solicitante_tmp:
+                    tipo_solicitante = [{"tipo": "Pessoa Física"}, {"tipo": "Pessoa Jurídica"}]
+                else:
+                    tipo_solicitante = [{"tipo": "Pessoa {0}".format(i)} for i in tipo_solicitante_tmp if i != 'Ambas']
 
-            titulo_etapa = ""
-            tempo_total_estimado_dias = answare['Quantos dias o usuário espera até a efetiva entrega do serviço?']
-            if not tempo_total_estimado_dias:
-                tempo_total_estimado_dias="-1"
-            survey_id = survey
-            lime_id = id_orgao + id_servico
-            orgao_dbid = Orgao.objects.get(pk=id_orgao)
+                titulo_etapa = ""
+                tempo_total_estimado_dias = answare['Quantos dias o usuário espera até a efetiva entrega do serviço?']
+                if not tempo_total_estimado_dias:
+                    tempo_total_estimado_dias="-1"
+                survey_id = survey
+                lime_id = id_orgao + id_servico
+                orgao_dbid = Orgao.objects.get(pk=id_orgao)
 
-            try:
-                Answares.objects.create(
-                    answare_id=answare_id,
-                    lime_id=lime_id,
-                    survey_id=survey_id,
-                    servico_id=id_servico,
-                    orgao_id=id_orgao,
-                    orgao_dbid=orgao_dbid.dbid,
-                    orgao_nome=orgao_nome,
-                    servico_nome=nome_servico,
-                    status="N",
-                    tipo_solicitante=json.dumps(tipo_solicitante),
-                    titulo_etapa=titulo_etapa,
-                    tempo_total_estimado_dias=tempo_total_estimado_dias,
-                )
-            except Exception as e:
-                print('Valores incompatíveis')
-                continue
+                try:
+                    Answares.objects.create(
+                        answare_id=answare_id,
+                        lime_id=lime_id,
+                        survey_id=survey_id,
+                        servico_id=id_servico,
+                        orgao_id=id_orgao,
+                        orgao_dbid=orgao_dbid.dbid,
+                        orgao_nome=orgao_nome,
+                        servico_nome=nome_servico,
+                        status="N",
+                        tipo_solicitante=json.dumps(tipo_solicitante),
+                        titulo_etapa=titulo_etapa,
+                        tempo_total_estimado_dias=tempo_total_estimado_dias,
+                    )
+                except Exception as e:
+                    print('Valores incompatíveis')
+                    continue
 
 
         pendings = Answares.objects.filter(status='N')

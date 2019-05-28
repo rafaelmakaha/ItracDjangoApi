@@ -81,29 +81,27 @@ class AnswaresViewSet(viewsets.ModelViewSet):
         if not self.request.data['servico_nome'] in servicos:
             ans = Answares.objects.get(pk=int(self.request.data['answare_id']))
             ans.servico_nome = self.request.data['servico_nome']
-            response = ServicosOrgaos.create_servico(ans.__dict__, servicos_username, servicos_password)
-            servico_id = response.json()['resposta']
+            # response = ServicosOrgaos.create_servico(ans.__dict__, servicos_username, servicos_password)
+            # servico_id = response.json()['resposta']
+            servico_id = '1111'
             if servico_id:
                 ans.servico_id = servico_id
-                try:
-
-                    ans.save()
-                except Answares.DoesNotExist:
-                    pass
             else:
                 return Response({"status": "Failure"})
         else:
             servico_id = self.request.data['servico_id']
 
+        survey_id = self.request.data['survey_id']
+        answare_id = self.request.data['answare_id']
+        answare_id = ''.join(answare_id.split(survey_id))
+        ConnectDatabase.updateQueryAnsware(survey_id=survey_id, answare_id=answare_id, servico_id=servico_id)
+        ans.status = 'P'
         try:
-            survey_id = self.request.data['survey_id']
-            answare_id = self.request.data['answare_id']
-            answare_id = ''.join(answare_id.split(survey_id))
-            ConnectDatabase.updateQueryAnsware(survey_id=survey_id, answare_id=answare_id, servico_id=servico_id)
-        except:
-            return Response({"status": "Failure"})
+            ans.save()
+        except Answares.DoesNotExist:
+            pass
 
-        super(AnswaresViewSet, self).update(request, *args, **kwargs)
+        # super(AnswaresViewSet, self).update(request, *args, **kwargs)
         return Response({"status": "Success"})
 
 

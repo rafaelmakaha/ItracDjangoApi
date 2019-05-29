@@ -60,10 +60,10 @@ class Sugestoes(viewsets.ModelViewSet):
 
     def post(self, request, format=None):
         nome = self.request.data['nome']
-        # orgao_id = self.request.data['orgao_id']
+        orgao_id = self.request.data['orgao_id']
         qtd = 5
-        all_servicos = Servico.objects.all()
-        # all_servicos_orgao = Servico.objects.filter(orgao__id=orgao_id)
+        # all_servicos = Servico.objects.all()
+        all_servicos = Servico.objects.filter(orgao__id=orgao_id)
 
         list_result = []
         for s in all_servicos:

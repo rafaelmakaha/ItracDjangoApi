@@ -6,7 +6,7 @@ django-cors-headers
 configparser==3.7.4
 python-Levenshtein==0.12.0
 PyMySQL==0.9.3
-PyYaml==5.1
+PyYaml==5.4
 requests==2.21.0
 dicttoxml
 declxml
